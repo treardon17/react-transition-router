@@ -1,65 +1,71 @@
-# Boilerplate for creating React-component npm package with ES2015
+# A router for React with lifecycle hooks and animations
 
-Starter point for creating [React](https://facebook.github.io/react/) components that you can published on Npm.
-
-* Bundled with [Webpack 2](https://webpack.js.org/)
-* Develop with Hot Module Replacement [(HMR)](https://webpack.js.org/concepts/hot-module-replacement/)
-* Includes linting with [ESLint](http://eslint.org/)
-* Testing with [Jest](http://facebook.github.io/jest/).
+* Animations made with [velocity-react](https://github.com/google-fabric/velocity-react)
+* Extends [history](https://github.com/ReactTraining/history) for directional animations
 
 ## Usage
 
-1. Install modules 
-    > yarn
-
-2. Check **_package.json_** so that the information is correct.
-3. Start example and start coding! 
-    > yarn start
-
-4. Bundle with `yarn build`
-5. To test if it works correctly in another project you can use npm `npm install -S ../react-npm-component-boilerplate` Note the relative path
-
-E.g. this folder structure
 ```
-    ./workspace/
-        MyProject
-        react-npm-boilerplate
+import React from 'react';
+import AppState from './state/AppState';
+// import components
+import { PageTransition, Route } from 'react-transition-router';
+// import pages
+import Home from './pages/Home';
+import Test from './pages/Test';
+
+// create global state
+const appState = new AppState();
+
+export default class Routes extends React.Component {
+  constructor(props) {
+    super(props);
+
+    console.log('transitioner', PageTransition);
+
+    const animationObject = {
+      load: { animation: { opacity: [1, 0], translateY: ['0%', '100%'] }, duration: 500 },
+      pop: {
+        enter: { animation: { opacity: [1, 0], translateX: ['0%', '100%'] }, duration: 500 },
+        exit: { animation: { opacity: [0, 1], translateX: ['-100%', '0%'] }, duration: 500 },
+      },
+      push: {
+        enter: { animation: { opacity: [1, 0], translateX: ['0%', '-100%'] }, duration: 500 },
+        exit: { animation: { opacity: [0, 1], translateX: ['100%', '0%'] }, duration: 500 },
+      },
+    };
+
+    this.state = {
+      routes: [
+        <Route exact path="/" key="Home" component={() => <Home state={appState} />} animations={animationObject} />,
+        <Route exact path="/test" key="Test" component={() => <Test state={appState} />} />,
+      ],
+    };
+  }
+
+  render() {
+    const animationObject = {
+      load: { animation: { opacity: [1, 0], translateY: ['0%', '100%'] }, duration: 600 },
+      pop: {
+        enter: { animation: { opacity: [1, 0], translateX: ['0%', '100%'] }, duration: 500 },
+        exit: { animation: { opacity: [0, 1], translateX: ['-100%', '0%'] }, duration: 500 },
+      },
+      push: {
+        enter: { animation: { opacity: [1, 0], translateX: ['0%', '-100%'] }, duration: 500 },
+        exit: { animation: { opacity: [0, 1], translateX: ['100%', '0%'] }, duration: 500 },
+      },
+    };
+
+    return (
+      <div id="app-container">
+        <PageTransition
+          routes={this.state.routes}
+          animations={animationObject}
+          loadAnimationName="load"
+        />
+      </div>
+    );
+  }
+}
+
 ```
-### Extra
-* If you want to run tests: 
-    > yarn test
-
-* You need to write tests in `__tests__` folder or as `.test.js`.
-* It you want to keep watch run: 
-    > yarn test-watch
-
-* If you want coverage run: 
-    > yarn test-coverage
-
-* If you want to run eslint: 
-    > yarn lint
-
-* If you want to automatically fix lint problems run :
-    > yarn lint-fix
-
-Adjust your `.eslintrc` config file to your own preference.
-
-## NPM equivalent
-yarn | npm
----- | ---
-`yarn` | `npm install`
-`yarn test` | `npm run test`
-`yarn build` | `npm run build`
-`yarn test-watch` | `npm run test-watch`
-`yarn test-coverage` | `npm run test-coverage`
-`yarn lint` | `npm run lint`
-`yarn lint-fix` | `npm run lint-fix`
-____
-### Resources
-
-* http://kloc.io/setting-up-react-workflow-babel-webpack/
-* https://facebook.github.io/jest/docs/webpack.html
-* https://webpack.js.org/guides/code-splitting-libraries/#manifest-file
-____
-### Credit
-Documentation is inspired by [Julian Ćwirko](https://github.com/juliancwirko) and the [https://github.com/juliancwirko/react-npm-boilerplate](https://github.com/juliancwirko/react-npm-boilerplate) package.
