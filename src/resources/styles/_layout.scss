@@ -1,0 +1,6 @@
+@import "_variables";
+@import "_mixins";
+
+html, body {
+  backface-visibility: hidden;
+}
