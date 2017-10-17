@@ -3,4 +3,7 @@
 
 html, body {
   backface-visibility: hidden;
+  -webkit-perspective: 1000;
 }
+
+body { position: relative; }

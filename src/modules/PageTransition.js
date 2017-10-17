@@ -13,6 +13,7 @@ export default class PageTransition extends React.Component {
   }
 
   componentDidMount() {
+    // Set the initial page to our current route
     this.setPageForRoute(this.state.currentRoute);
   }
 
@@ -22,8 +23,12 @@ export default class PageTransition extends React.Component {
       prevRoute: null,
       currentPage: null,
     };
+    // Current action --> POP or PUSH
     this.currentAction = '';
+    // Start with empty route object, to be constructed in `setRoutes`
     this.routes = {};
+    // Default to chaining animations
+    this.serialize = (this.props.serialize == null || this.props.serialize ? true : false);
   }
 
   setBinds() {
@@ -111,10 +116,15 @@ export default class PageTransition extends React.Component {
     }
 
     // Set current route and previous route.
+    // If we're meant to chain the animations, set the current page to null
+    // so that the first page can transition out.
+    // If we're not supposed to serialize, set the new current page to the current
+    // route so that the new page can transition in while the other page is
+    // transitioning out
     this.setState({
       currentRoute: route,
       prevRoute: this.state.currentRoute,
-      currentPage: null,
+      currentPage: (this.serialize ? null : this.getPageForRoute(route)),
     });
   }
 
@@ -149,9 +159,12 @@ export default class PageTransition extends React.Component {
    * @return {void}
    */
   enterPageComplete() {
+    // Notify parent if needed
+    if (typeof this.props.enterAnimationFinish === 'function') {
+      this.props.enterAnimationFinish(route);
+    }
     this.routeDidChange();
   }
-
 
   /**
    * exitPageBegin - Function called when exit animation begins
@@ -171,7 +184,16 @@ export default class PageTransition extends React.Component {
    * @return {type}  description
    */
   exitPageComplete() {
-    this.setPageForRoute(this.state.currentRoute);
+    // Notify parent if needed
+    if (typeof this.props.exitAnimationFinish === 'function') {
+      this.props.exitAnimationFinish(route);
+    }
+
+    // If we're supposed to chain the animations
+    if (this.serialize) {
+      // Change the page to the new route
+      this.setPageForRoute(this.state.currentRoute);
+    }
   }
 
   /**
@@ -224,9 +246,9 @@ export default class PageTransition extends React.Component {
 
   render() {
     const { enterAnimation, exitAnimation } = this.createAnimations();
+    const styles = { position: 'relative' };
     return (
-      <div className="page-transition">
-        <button onClick={() => { History.push('/test'); }} />
+      <div className="page-transition" style={styles}>
         <VelocityTransitionGroup
           enter={enterAnimation}
           leave={exitAnimation}
@@ -243,8 +265,11 @@ PageTransition.propTypes = {
   routes: PropTypes.array.isRequired,
   routeWillChange: PropTypes.func,
   routeDidChange: PropTypes.func,
+  exitAnimationFinish: PropTypes.func,
   exitAnimationBegin: PropTypes.func,
   enterAnimationBegin: PropTypes.func,
+  enterAnimationFinish: PropTypes.func,
   animations: PropTypes.object,
   loadAnimationName: PropTypes.string,
+  serialize: PropTypes.bool,
 };

@@ -10,6 +10,7 @@
 * `path`: PropTypes.string.isRequired
 * `component`: PropTypes.func.isRequired
 * `exact`: PropTypes.bool
+* `absolute`: PropTypes.bool
 * `animations`: PropTypes.object
 
 #### path: REQUIRED
@@ -20,6 +21,9 @@ The element that will be available at the `path`
 
 #### exact
 Not yet implemented
+
+#### absolute
+Helpful for when animations are not serialized. Prevents elements transitioning from affecting each other's place on the page.  Adds `position: 'absolute'` and `top:0`, `bottom:0`, `left:0`, `right:0` to the routes. Defaults to `true`.
 
 #### animations
 Specific animations for a particular page.  This will override any generic animations provided to the `PageTransition`.  See `animations` in `PageTransition` for more details on how to format the animations.
@@ -32,8 +36,11 @@ Specific animations for a particular page.  This will override any generic anima
 * `routeWillChange`: PropTypes.func
 * `routeDidChange`: PropTypes.func
 * `exitAnimationBegin`: PropTypes.func
+* `exitAnimationFinish`: PropTypes.func
 * `enterAnimationBegin`: PropTypes.func
+* `enterAnimationFinish`: PropTypes.func
 * `loadAnimationName`: PropTypes.string
+* `serialize`: PropTypes.bool
 * `animations`: PropTypes.object
 
 #### routes
@@ -48,11 +55,20 @@ Callback function triggered after a route changed to a different page (after all
 #### exitAnimationBegin
 Callback function triggered when the animation of the leaving page begins
 
+#### exitAnimationFinish
+Callback function triggered when the animation of the leaving page completes
+
 #### enterAnimationBegin
 Callback function triggered when the animation of the entering page begins
 
+#### enterAnimationFinish
+Callback function triggered when the animation of the entering page completes
+
 #### loadAnimationName
 The name of the animation that should occur on page load. See `animations` for an example.
+
+#### serialize
+Boolean determining whether or not the animations should chain one after the other, or happen concurrently.  Defaults to true so animations will chain.
 
 #### animations
 An object defining the animations that should happen. Every animation object should have a `push` and a `pop` key, which each should contain a `enter` and `exit` key.  `push` events occur when either a new route was pushed to the history, or when the forward button in the browser is clicked.  `pop` events occur when the back button in the browser is clicked. The `enter` animation refers to the page entering the screen, and the `exit` animation refers to the page exiting.

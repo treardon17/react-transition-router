@@ -55,6 +55,7 @@ var PageTransition = function (_React$Component) {
   _createClass(PageTransition, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      // Set the initial page to our current route
       this.setPageForRoute(this.state.currentRoute);
     }
   }, {
@@ -65,8 +66,12 @@ var PageTransition = function (_React$Component) {
         prevRoute: null,
         currentPage: null
       };
+      // Current action --> POP or PUSH
       this.currentAction = '';
+      // Start with empty route object, to be constructed in `setRoutes`
       this.routes = {};
+      // Default to chaining animations
+      this.serialize = this.props.serialize == null || this.props.serialize ? true : false;
     }
   }, {
     key: 'setBinds',
@@ -173,10 +178,15 @@ var PageTransition = function (_React$Component) {
       }
 
       // Set current route and previous route.
+      // If we're meant to chain the animations, set the current page to null
+      // so that the first page can transition out.
+      // If we're not supposed to serialize, set the new current page to the current
+      // route so that the new page can transition in while the other page is
+      // transitioning out
       this.setState({
         currentRoute: route,
         prevRoute: this.state.currentRoute,
-        currentPage: null
+        currentPage: this.serialize ? null : this.getPageForRoute(route)
       });
     }
 
@@ -220,6 +230,10 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'enterPageComplete',
     value: function enterPageComplete() {
+      // Notify parent if needed
+      if (typeof this.props.enterAnimationFinish === 'function') {
+        this.props.enterAnimationFinish(route);
+      }
       this.routeDidChange();
     }
 
@@ -247,7 +261,16 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'exitPageComplete',
     value: function exitPageComplete() {
-      this.setPageForRoute(this.state.currentRoute);
+      // Notify parent if needed
+      if (typeof this.props.exitAnimationFinish === 'function') {
+        this.props.exitAnimationFinish(route);
+      }
+
+      // If we're supposed to chain the animations
+      if (this.serialize) {
+        // Change the page to the new route
+        this.setPageForRoute(this.state.currentRoute);
+      }
     }
 
     /**
@@ -312,12 +335,10 @@ var PageTransition = function (_React$Component) {
           enterAnimation = _createAnimations.enterAnimation,
           exitAnimation = _createAnimations.exitAnimation;
 
+      var styles = { position: 'relative' };
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
-        { className: 'page-transition' },
-        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('button', { onClick: function onClick() {
-            __WEBPACK_IMPORTED_MODULE_3__state_History__["a" /* default */].push('/test');
-          } }),
+        { className: 'page-transition', style: styles },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           __WEBPACK_IMPORTED_MODULE_2_velocity_react__["VelocityTransitionGroup"],
           {
@@ -341,10 +362,13 @@ PageTransition.propTypes = {
   routes: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array.isRequired,
   routeWillChange: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   routeDidChange: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
+  exitAnimationFinish: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   exitAnimationBegin: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   enterAnimationBegin: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
+  enterAnimationFinish: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   animations: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object,
-  loadAnimationName: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string
+  loadAnimationName: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string,
+  serialize: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
 };
 
 /***/ }),
@@ -377,13 +401,20 @@ var Route = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (Route.__proto__ || Object.getPrototypeOf(Route)).call(this, props));
 
     _this.animations = _this.props.animations;
+    // Default to position absolute
+    _this.absolute = _this.props.absolute == null || _this.props.absolute ? true : false;
     return _this;
   }
 
   _createClass(Route, [{
     key: 'render',
     value: function render() {
-      return this.props.component();
+      var styles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'route', style: styles },
+        this.props.component()
+      );
     }
   }]);
 
@@ -397,7 +428,8 @@ Route.propTypes = {
   path: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string.isRequired,
   component: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func.isRequired,
   exact: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  animations: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object
+  animations: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object,
+  absolute: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
 };
 
 /***/ }),
@@ -510,6 +542,18 @@ var History = function () {
     key: 'push',
     value: function push(path) {
       this.history.push(path);
+    }
+
+    /**
+     * pop - Pop the history state --> go back one in history
+     *
+     * @return {void}
+     */
+
+  }, {
+    key: 'pop',
+    value: function pop() {
+      this.history.goBack();
     }
 
     /**

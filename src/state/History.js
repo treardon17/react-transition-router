@@ -59,6 +59,16 @@ class History {
     this.history.push(path);
   }
 
+
+  /**
+   * pop - Pop the history state --> go back one in history
+   *
+   * @return {void}
+   */
+  pop() {
+    this.history.goBack();
+  }
+
   /**
    * getHistoryDirection - description
    *
