@@ -43,7 +43,7 @@ Specific animations for a particular page.  This will override any generic anima
 * `serialize`: PropTypes.bool
 * `animations`: PropTypes.object
 
-#### routes
+#### routes: REQUIRED
 List of `Route` items
 
 #### routeWillChange
