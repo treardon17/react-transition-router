@@ -3,6 +3,7 @@
 * Animations made with [velocity-react](https://github.com/google-fabric/velocity-react)
 * Extends [history](https://github.com/ReactTraining/history) for directional animations
 
+
 ---
 
 ## Route
@@ -23,7 +24,7 @@ The element that will be available at the `path`
 Not yet implemented
 
 #### absolute
-Helpful for when animations are not serialized. Prevents elements transitioning from affecting each other's place on the page.  Adds `position: 'absolute'` and `top:0`, `bottom:0`, `left:0`, `right:0` to the routes. Defaults to `true`.
+Helpful for when animations are not serialized. Prevents elements transitioning from affecting each other's place on the page.  Adds `position: 'absolute'` and `top:0`, `bottom:0`, `left:0`, `right:0` to the routes. Defaults to `false`.
 
 #### animations
 Specific animations for a particular page.  This will override any generic animations provided to the `PageTransition`.  See `animations` in `PageTransition` for more details on how to format the animations.
@@ -90,8 +91,7 @@ const animationObject = {
 };
 ```
 
-
-___
+---
 
 ## Example Usage
 ```
@@ -153,5 +153,44 @@ export default class Routes extends React.Component {
     );
   }
 }
+
+```
+
+___
+
+## History
+### How to push and pop the state
+`import { History } from 'react-transition-router'`
+* `listen`
+* `unlisten`
+* `push`
+* `pop`
+
+
+#### listen(callback)
+Takes a callback function as a parameter that will be called every time the history is modified with the `push` or `pop` command, and returns a unique identifier that can be used to later remove the callback if necessary. The callback will be passed two parameters: the `path` being pushed, as well as the `direction` the history is going (PUSH or POP).
+
+#### unlisten(id)
+Takes the unique identifier string returned by the `listen` function and unregisters the callback function so it no longer receives callback notifications
+
+#### push(path)
+Pushes a new path to the history. This event will trigger the callback function passed into `listen`.
+
+#### pop()
+Pops a path from the history. This event will trigger the callback function passed into `listen`.
+
+---
+
+## Example Usage
+
+```
+import { History } from 'react-transition-router';
+
+History.listen((location, direction) => {
+  console.log(`History changed to: ${location}, via ${direction}`);
+});
+
+History.push('/test');
+History.pop();
 
 ```

@@ -7,3 +7,8 @@ html, body {
 }
 
 body { position: relative; }
+
+.route {
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+}

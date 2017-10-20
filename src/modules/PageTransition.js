@@ -220,15 +220,15 @@ export default class PageTransition extends React.Component {
       } else if (this.currentAction === History.directions.push.toLowerCase()
         || this.currentAction === History.directions.pop.toLowerCase()) {
         // If we're coming from a history action
-        const actionAnimations = animations[this.currentAction];
+        const actionAnimations = animations[this.currentAction] || {};
         if (actionAnimations.enter) { newEnterAnimation = actionAnimations.enter; }
         if (actionAnimations.exit) { newExitAnimation = actionAnimations.exit; }
       }
     }
 
     // Set the default animations if no animations were found
-    if (!newEnterAnimation) { newEnterAnimation = { animation: { opacity: [1, 0] }, duration: 300 }; }
-    if (!newExitAnimation) { newExitAnimation = { animation: { opacity: [0, 1] }, duration: 300 }; }
+    if (!newEnterAnimation) { newEnterAnimation = { animation: { opacity: [1, 0] }, duration: 500 }; }
+    if (!newExitAnimation) { newExitAnimation = { animation: { opacity: [0, 1] }, duration: 500 }; }
 
     // Set completion handlers
     // BEGIN

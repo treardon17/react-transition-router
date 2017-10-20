@@ -297,7 +297,7 @@ var PageTransition = function (_React$Component) {
           newEnterAnimation = animations[this.props.loadAnimationName];
         } else if (this.currentAction === __WEBPACK_IMPORTED_MODULE_3__state_History__["a" /* default */].directions.push.toLowerCase() || this.currentAction === __WEBPACK_IMPORTED_MODULE_3__state_History__["a" /* default */].directions.pop.toLowerCase()) {
           // If we're coming from a history action
-          var actionAnimations = animations[this.currentAction];
+          var actionAnimations = animations[this.currentAction] || {};
           if (actionAnimations.enter) {
             newEnterAnimation = actionAnimations.enter;
           }
@@ -309,10 +309,10 @@ var PageTransition = function (_React$Component) {
 
       // Set the default animations if no animations were found
       if (!newEnterAnimation) {
-        newEnterAnimation = { animation: { opacity: [1, 0] }, duration: 300 };
+        newEnterAnimation = { animation: { opacity: [1, 0] }, duration: 500 };
       }
       if (!newExitAnimation) {
-        newExitAnimation = { animation: { opacity: [0, 1] }, duration: 300 };
+        newExitAnimation = { animation: { opacity: [0, 1] }, duration: 500 };
       }
 
       // Set completion handlers
@@ -401,18 +401,21 @@ var Route = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (Route.__proto__ || Object.getPrototypeOf(Route)).call(this, props));
 
     _this.animations = _this.props.animations;
-    // Default to position absolute
-    _this.absolute = _this.props.absolute == null || _this.props.absolute ? true : false;
+    // Default to regular positioning
+    _this.absolute = _this.props.absolute;
+    // This would make it default to true
+    // (this.props.absolute == null || this.props.absolute ? true : false);
     return _this;
   }
 
   _createClass(Route, [{
     key: 'render',
     value: function render() {
-      var styles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
+      var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
+      var animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
-        { className: 'route', style: styles },
+        { className: 'route', style: Object.assign(positionStyles, animationStyles) },
         this.props.component()
       );
     }
