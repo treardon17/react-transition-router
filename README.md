@@ -161,10 +161,11 @@ ___
 ## History
 ### How to push and pop the state
 `import { History } from 'react-transition-router'`
-* `listen`
-* `unlisten`
-* `push`
-* `pop`
+* `listen(location, direction)`
+* `unlisten(id)`
+* `push(path)`
+* `pop()`
+* `allowPushDuplicates`: boolean
 
 
 #### listen(callback)
@@ -178,6 +179,9 @@ Pushes a new path to the history. This event will trigger the callback function 
 
 #### pop()
 Pops a path from the history. This event will trigger the callback function passed into `listen`.
+
+#### allowPushDuplicates
+Defaults to false so the current path cannot be pushed again. If set to true, it allows the current path to be pushed to the history again.
 
 ---
 

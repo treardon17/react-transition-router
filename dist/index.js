@@ -478,6 +478,8 @@ var History = function () {
     this.listeners = {};
     this.hashHistory = [window.location.pathname];
     this.historyLength = window.history.length;
+    this.currentRoute - window.location.pathname;
+    this.allowPushDuplicates = false;
     this.setBinds();
 
     this.directions = {
@@ -536,6 +538,8 @@ var History = function () {
 
     /**
      * push - Push a route to the page history. This will change the page.
+     * Also, to prevent loading the same page over and over again, this prevents
+     * pushing the current path again, unless `this.allowPushDuplicates` is set to true
      *
      * @param  {String} path - Route to be pushed to the history
      * @return {void}
@@ -544,7 +548,10 @@ var History = function () {
   }, {
     key: 'push',
     value: function push(path) {
-      this.history.push(path);
+      if (this.currentRoute !== path || this.allowPushDuplicates) {
+        this.currentRoute = path;
+        this.history.push(path);
+      }
     }
 
     /**
