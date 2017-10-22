@@ -12,11 +12,12 @@ export default class Route extends React.Component {
   }
 
   render() {
+    const urlParameters = this.props.urlParameters || '';
     const positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, } : { };
     const animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
     return (
       <div className="route" style={Object.assign(positionStyles, animationStyles)}>
-        {this.props.component()}
+        {this.props.component(urlParameters)}
       </div>
     );
   }

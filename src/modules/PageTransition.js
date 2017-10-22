@@ -9,12 +9,16 @@ export default class PageTransition extends React.Component {
     super(props);
     this.setDefaults();
     this.setBinds();
-    this.setRoutes();
+    this.setRoutes(this.props.routes);
   }
 
   componentDidMount() {
     // Set the initial page to our current route
     this.setPageForRoute(this.state.currentRoute);
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    this.setRoutes(this.props.routes);
   }
 
   setDefaults() {
@@ -25,14 +29,23 @@ export default class PageTransition extends React.Component {
     };
     // Current action --> POP or PUSH
     this.currentAction = '';
-    // Start with empty route object, to be constructed in `setRoutes`
-    this.routes = {};
-    // Default to chaining animations
-    this.serialize = (this.props.serialize == null || this.props.serialize ? true : false);
+    // Start with empty route objects, to be constructed in `setRoutes`
+    // exactRoutes have an exact path and don't anticipate parameters
+    // at the end of a url
+    this.exactRoutes = {};
+    // approxRoutes can have parameters at the end of a url
+    // but they are not as efficient
+    this.approxRoutes = {};
+    this.setRoutes(this.props.routes);
   }
 
   setBinds() {
     History.listen(this.historyChange.bind(this));
+  }
+
+  getSerialize() {
+    // Default to chaining animations
+    return (this.props.serialize == null || this.props.serialize ? true : false);
   }
 
   /**
@@ -42,13 +55,24 @@ export default class PageTransition extends React.Component {
    *
    * @return {void}
    */
-  setRoutes() {
-    const routes = {};
-    for (let i = 0; i < this.props.routes.length; i+=1) {
-      const routeItem = this.props.routes[i];
-      routes[routeItem.props.path] = routeItem;
+  setRoutes(routes) {
+    const exactRoutes = {};
+    const approxRoutes = {};
+    for (let i = 0; i < routes.length; i+=1) {
+      const routeItem = routes[i];
+      // If the route item path has a slash at the end of it
+      // we want to get rid of that so it's easier to look up
+      // that path later (consistent formatting wise)
+      let routePath = this.getFormattedRoute(routeItem.props.path);
+      // Set the route to the correct route object
+      if (routeItem.props.exact) {
+        exactRoutes[routePath] = routeItem;
+      } else {
+        approxRoutes[routePath] = routeItem
+      }
     }
-    this.routes = routes;
+    this.exactRoutes = exactRoutes;
+    this.approxRoutes = approxRoutes;
   }
 
   /**
@@ -63,6 +87,19 @@ export default class PageTransition extends React.Component {
   }
 
   /**
+   * getFormattedRoute - Takes a route string and returns a route formatted correctly
+   *
+   * @param  {String} route - the string path of a route
+   * @return {String}       the formatted route
+   */
+  getFormattedRoute(route) {
+    if (route[route.length - 1] === '/') {
+      return route.slice(0, -1);
+    }
+    return route;
+  }
+
+  /**
    * getPageForRoute - Retrieves the requested page or null
    * if it doesn't exist
    *
@@ -70,12 +107,34 @@ export default class PageTransition extends React.Component {
    * @return {Page} Page component
    */
   getPageForRoute(path) {
-    const page = this.routes[path];
-    if (typeof page === 'object') {
-      return page;
-    } else {
-      return null;
+    const testPath = this.getFormattedRoute(path);
+    // First check to see if the page is in the exactRoutes object
+    let page = this.exactRoutes[testPath];
+    // Otherwise we check to see if it's in the approxRoutes object
+    if (!page){
+      const keys = Object.keys(this.approxRoutes);
+      let bestMatchPath = '';
+      let parameterString = '';
+      for (let i = 0; i < keys.length; i++){
+        const newPath = keys[i];
+        const pathArray = testPath.split(newPath);
+        // If there was a match, we found a possible winner
+        if (pathArray && pathArray.length === 2 && bestMatchPath.length < newPath.length) {
+          bestMatchPath = newPath;
+          parameterString = pathArray[1];
+        }
+      }
+      // We found our approximated page
+      page = this.approxRoutes[bestMatchPath];
+      // If we need to pass parameters to our page
+      if (parameterString !== '') {
+        page = React.cloneElement(page, { urlParameters: parameterString});
+      }
     }
+
+    // If the page exists, we just want to return it,
+    // otherwise we return null so it never returns 'undefined'
+    return page || null;
   }
 
   /**
@@ -124,7 +183,7 @@ export default class PageTransition extends React.Component {
     this.setState({
       currentRoute: route,
       prevRoute: this.state.currentRoute,
-      currentPage: (this.serialize ? null : this.getPageForRoute(route)),
+      currentPage: (this.getSerialize() ? null : this.getPageForRoute(route)),
     });
   }
 
@@ -190,7 +249,7 @@ export default class PageTransition extends React.Component {
     }
 
     // If we're supposed to chain the animations
-    if (this.serialize) {
+    if (this.getSerialize()) {
       // Change the page to the new route
       this.setPageForRoute(this.state.currentRoute);
     }

@@ -21,8 +21,6 @@ return webpackJsonpreact_transition_router([1],{
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_velocity_react__ = __webpack_require__(240);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_velocity_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_velocity_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__state_History__ = __webpack_require__(71);
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -48,7 +46,7 @@ var PageTransition = function (_React$Component) {
 
     _this.setDefaults();
     _this.setBinds();
-    _this.setRoutes();
+    _this.setRoutes(_this.props.routes);
     return _this;
   }
 
@@ -57,6 +55,11 @@ var PageTransition = function (_React$Component) {
     value: function componentDidMount() {
       // Set the initial page to our current route
       this.setPageForRoute(this.state.currentRoute);
+    }
+  }, {
+    key: 'componentWillUpdate',
+    value: function componentWillUpdate(nextProps, nextState) {
+      this.setRoutes(this.props.routes);
     }
   }, {
     key: 'setDefaults',
@@ -68,15 +71,25 @@ var PageTransition = function (_React$Component) {
       };
       // Current action --> POP or PUSH
       this.currentAction = '';
-      // Start with empty route object, to be constructed in `setRoutes`
-      this.routes = {};
-      // Default to chaining animations
-      this.serialize = this.props.serialize == null || this.props.serialize ? true : false;
+      // Start with empty route objects, to be constructed in `setRoutes`
+      // exactRoutes have an exact path and don't anticipate parameters
+      // at the end of a url
+      this.exactRoutes = {};
+      // approxRoutes can have parameters at the end of a url
+      // but they are not as efficient
+      this.approxRoutes = {};
+      this.setRoutes(this.props.routes);
     }
   }, {
     key: 'setBinds',
     value: function setBinds() {
       __WEBPACK_IMPORTED_MODULE_3__state_History__["a" /* default */].listen(this.historyChange.bind(this));
+    }
+  }, {
+    key: 'getSerialize',
+    value: function getSerialize() {
+      // Default to chaining animations
+      return this.props.serialize == null || this.props.serialize ? true : false;
     }
 
     /**
@@ -89,13 +102,24 @@ var PageTransition = function (_React$Component) {
 
   }, {
     key: 'setRoutes',
-    value: function setRoutes() {
-      var routes = {};
-      for (var i = 0; i < this.props.routes.length; i += 1) {
-        var routeItem = this.props.routes[i];
-        routes[routeItem.props.path] = routeItem;
+    value: function setRoutes(routes) {
+      var exactRoutes = {};
+      var approxRoutes = {};
+      for (var i = 0; i < routes.length; i += 1) {
+        var routeItem = routes[i];
+        // If the route item path has a slash at the end of it
+        // we want to get rid of that so it's easier to look up
+        // that path later (consistent formatting wise)
+        var routePath = this.getFormattedRoute(routeItem.props.path);
+        // Set the route to the correct route object
+        if (routeItem.props.exact) {
+          exactRoutes[routePath] = routeItem;
+        } else {
+          approxRoutes[routePath] = routeItem;
+        }
       }
-      this.routes = routes;
+      this.exactRoutes = exactRoutes;
+      this.approxRoutes = approxRoutes;
     }
 
     /**
@@ -113,6 +137,22 @@ var PageTransition = function (_React$Component) {
     }
 
     /**
+     * getFormattedRoute - Takes a route string and returns a route formatted correctly
+     *
+     * @param  {String} route - the string path of a route
+     * @return {String}       the formatted route
+     */
+
+  }, {
+    key: 'getFormattedRoute',
+    value: function getFormattedRoute(route) {
+      if (route[route.length - 1] === '/') {
+        return route.slice(0, -1);
+      }
+      return route;
+    }
+
+    /**
      * getPageForRoute - Retrieves the requested page or null
      * if it doesn't exist
      *
@@ -123,12 +163,34 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'getPageForRoute',
     value: function getPageForRoute(path) {
-      var page = this.routes[path];
-      if ((typeof page === 'undefined' ? 'undefined' : _typeof(page)) === 'object') {
-        return page;
-      } else {
-        return null;
+      var testPath = this.getFormattedRoute(path);
+      // First check to see if the page is in the exactRoutes object
+      var page = this.exactRoutes[testPath];
+      // Otherwise we check to see if it's in the approxRoutes object
+      if (!page) {
+        var keys = Object.keys(this.approxRoutes);
+        var bestMatchPath = '';
+        var parameterString = '';
+        for (var i = 0; i < keys.length; i++) {
+          var newPath = keys[i];
+          var pathArray = testPath.split(newPath);
+          // If there was a match, we found a possible winner
+          if (pathArray && pathArray.length === 2 && bestMatchPath.length < newPath.length) {
+            bestMatchPath = newPath;
+            parameterString = pathArray[1];
+          }
+        }
+        // We found our approximated page
+        page = this.approxRoutes[bestMatchPath];
+        // If we need to pass parameters to our page
+        if (parameterString !== '') {
+          page = __WEBPACK_IMPORTED_MODULE_0_react___default.a.cloneElement(page, { urlParameters: parameterString });
+        }
       }
+
+      // If the page exists, we just want to return it,
+      // otherwise we return null so it never returns 'undefined'
+      return page || null;
     }
 
     /**
@@ -186,7 +248,7 @@ var PageTransition = function (_React$Component) {
       this.setState({
         currentRoute: route,
         prevRoute: this.state.currentRoute,
-        currentPage: this.serialize ? null : this.getPageForRoute(route)
+        currentPage: this.getSerialize() ? null : this.getPageForRoute(route)
       });
     }
 
@@ -267,7 +329,7 @@ var PageTransition = function (_React$Component) {
       }
 
       // If we're supposed to chain the animations
-      if (this.serialize) {
+      if (this.getSerialize()) {
         // Change the page to the new route
         this.setPageForRoute(this.state.currentRoute);
       }
@@ -411,12 +473,13 @@ var Route = function (_React$Component) {
   _createClass(Route, [{
     key: 'render',
     value: function render() {
+      var urlParameters = this.props.urlParameters || '';
       var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
       var animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         { className: 'route', style: Object.assign(positionStyles, animationStyles) },
-        this.props.component()
+        this.props.component(urlParameters)
       );
     }
   }]);
