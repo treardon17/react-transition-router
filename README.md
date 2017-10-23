@@ -11,6 +11,7 @@
 * `path`: PropTypes.string.isRequired
 * `component`: PropTypes.func.isRequired
 * `exact`: PropTypes.bool
+* `childOf`: PropTypes.string
 * `absolute`: PropTypes.bool
 * `animations`: PropTypes.object
 
@@ -18,10 +19,28 @@
 A unique path that determines the URL to a `component`
 
 #### component: REQUIRED
-The element that will be available at the `path`
+The element that will be available at the `path`. Should be an anonymous function that returns the component you want.
 
 #### exact
-Not yet implemented
+If `exact` is set to `true`, the exact url given as a prop must be entered into the address bar in order to get to that page. If `exact` is set to `false`, then if the url in the address bar matches the url given as a prop and then some, then the page that is closest to the url in the address bar will be given.
+
+For example, if the `path` prop is set to `/example/` and the `exact` prop is set to true, you can only get to the `/example/` page by inputting `http://www.domain.com/example` or `http://www.domain.com/example/`. However, if the `exact` prop is set to `false` with that same url, you could get to the example page by going to `http://www.domain.com/example/hello/world`. In this scenario, `/hello/world` would be passed to the `component` function in a data object (it is a member variable of the object accessible by `dataObject.urlParams`) so that the page can handle any extra stuff it needs to do with the url data.
+
+An example of what the above is describing would look something like this:
+
+`<Route path="/example/" key="test" component={dataObject => <Test parameters={dataObject} state={appState} />} />`
+
+Where the rest of the url would be accessible from `dataObject.urlParams`.
+
+#### childOf
+If you would like to deep link to a modal element or have a child page of another page, you can specify the `childOf` prop. To use this, you specify the path of the parent page. Then when you go to this route's path, it will first render the parent page, and then it will render this page. Currently there is only support for a single child page, but support for multiple child pages could be implemented in the future should the need arise.
+
+Example:
+```
+<Route exact path="/test" key="Test" component={() => <Test state={appState} />} />
+<Route exact childOf="/test" path="/test/modal" key="modal" component={() => <Modal state={appState} />} />
+```
+In this scenario, the `/test` page is the parent and the `/test/modal` page is the child.  If you go to `/test/` and then push `/test/modal`, the `/test` page will not go away, but rather the `/test/modal` page will be rendered alongside the `/test/` page.
 
 #### absolute
 Helpful for when animations are not serialized. Prevents elements transitioning from affecting each other's place on the page.  Adds `position: 'absolute'` and `top:0`, `bottom:0`, `left:0`, `right:0` to the routes. Defaults to `false`.

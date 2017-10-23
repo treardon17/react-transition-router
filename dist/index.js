@@ -67,7 +67,8 @@ var PageTransition = function (_React$Component) {
       this.state = {
         currentRoute: window.location.pathname,
         prevRoute: null,
-        currentPage: null
+        currentPage: null,
+        pageList: []
       };
       // Current action --> POP or PUSH
       this.currentAction = '';
@@ -133,7 +134,24 @@ var PageTransition = function (_React$Component) {
     key: 'setPageForRoute',
     value: function setPageForRoute(route) {
       var page = this.getPageForRoute(route);
+      this.setPageList(page);
       this.setState({ currentPage: page });
+    }
+  }, {
+    key: 'setPageList',
+    value: function setPageList(page) {
+      // If the currentPage is meant to be appended (like if we want to do a modal or something)
+      // then append it to the list of pages currently visible. Otherwise we just replace the
+      var pageList = this.state.pageList;
+      // current page list with the currentPage
+      if (page && page.props.childOf) {
+        var parentRoute = this.getFormattedRoute(page.props.childOf);
+        var parent = this.getPageForRoute(parentRoute);
+        pageList = [parent, page];
+      } else {
+        pageList = [page];
+      }
+      this.setState({ pageList: pageList });
     }
 
     /**
@@ -245,10 +263,13 @@ var PageTransition = function (_React$Component) {
       // If we're not supposed to serialize, set the new current page to the current
       // route so that the new page can transition in while the other page is
       // transitioning out
+      var currentPage = this.getSerialize() ? null : this.getPageForRoute(route);
+      this.setPageList(currentPage);
+
       this.setState({
         currentRoute: route,
         prevRoute: this.state.currentRoute,
-        currentPage: this.getSerialize() ? null : this.getPageForRoute(route)
+        currentPage: currentPage
       });
     }
 
@@ -408,7 +429,7 @@ var PageTransition = function (_React$Component) {
             leave: exitAnimation,
             runOnMount: true
           },
-          this.state.currentPage
+          this.state.pageList
         )
       );
     }
@@ -474,12 +495,13 @@ var Route = function (_React$Component) {
     key: 'render',
     value: function render() {
       var urlParameters = this.props.urlParameters || '';
+      var data = { urlParams: urlParameters };
       var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
       var animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         { className: 'route', style: Object.assign(positionStyles, animationStyles) },
-        this.props.component(urlParameters)
+        this.props.component(data)
       );
     }
   }]);
@@ -495,7 +517,8 @@ Route.propTypes = {
   component: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func.isRequired,
   exact: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
   animations: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object,
-  absolute: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
+  absolute: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  childOf: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string
 };
 
 /***/ }),

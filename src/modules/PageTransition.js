@@ -26,6 +26,7 @@ export default class PageTransition extends React.Component {
       currentRoute: window.location.pathname,
       prevRoute: null,
       currentPage: null,
+      pageList: [],
     };
     // Current action --> POP or PUSH
     this.currentAction = '';
@@ -83,7 +84,23 @@ export default class PageTransition extends React.Component {
    */
   setPageForRoute(route) {
     const page = this.getPageForRoute(route);
+    this.setPageList(page);
     this.setState({ currentPage: page });
+  }
+
+  setPageList(page) {
+    // If the currentPage is meant to be appended (like if we want to do a modal or something)
+    // then append it to the list of pages currently visible. Otherwise we just replace the
+    let pageList = this.state.pageList;
+    // current page list with the currentPage
+    if (page && page.props.childOf) {
+      const parentRoute = this.getFormattedRoute(page.props.childOf);
+      const parent = this.getPageForRoute(parentRoute);
+      pageList = [parent, page];
+    } else {
+      pageList = [page];
+    }
+    this.setState({ pageList: pageList })
   }
 
   /**
@@ -180,10 +197,13 @@ export default class PageTransition extends React.Component {
     // If we're not supposed to serialize, set the new current page to the current
     // route so that the new page can transition in while the other page is
     // transitioning out
+    const currentPage = (this.getSerialize() ? null : this.getPageForRoute(route));
+    this.setPageList(currentPage);
+
     this.setState({
       currentRoute: route,
       prevRoute: this.state.currentRoute,
-      currentPage: (this.getSerialize() ? null : this.getPageForRoute(route)),
+      currentPage: currentPage,
     });
   }
 
@@ -313,7 +333,7 @@ export default class PageTransition extends React.Component {
           leave={exitAnimation}
           runOnMount
         >
-          {this.state.currentPage}
+          {this.state.pageList}
         </VelocityTransitionGroup>
       </div>
     );
