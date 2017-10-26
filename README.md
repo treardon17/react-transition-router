@@ -46,6 +46,7 @@ Specific animations for a particular page.  This will override any generic anima
 ## PageTransition
 ### Props
 * `routes`: PropTypes.array.isRequired
+* `fallback`: PropTypes.string
 * `routeWillChange`: PropTypes.func
 * `routeDidChange`: PropTypes.func
 * `exitAnimationBegin`: PropTypes.func
@@ -56,8 +57,12 @@ Specific animations for a particular page.  This will override any generic anima
 * `serialize`: PropTypes.bool
 * `animations`: PropTypes.object
 
+
 #### routes: REQUIRED
 List of `Route` items
+
+#### fallback
+Path to a `Route` that will be displayed if no other page is found. Equivalent to a `404 error` page. Does not matter if it is `exact` or not.
 
 #### routeWillChange
 Callback function triggered before the route changes to a different page

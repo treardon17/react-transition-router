@@ -28,6 +28,10 @@ export default class PageTransition extends React.Component {
       currentPage: null,
       pageList: [],
     };
+
+    // A flag determining whether or not
+    // we're currently changing routes
+    this.transitioning = false;
     // Current action --> POP or PUSH
     this.currentAction = '';
     // Start with empty route objects, to be constructed in `setRoutes`
@@ -83,34 +87,43 @@ export default class PageTransition extends React.Component {
    * @return {void}
    */
   setPageForRoute(route) {
-    const page = this.getPageForRoute(route);
+    let page = this.getPageForRoute(route);
+    // If we didn't find a page, we want to look to see
+    // if there's a fallback page we can go to
+    if (!page && this.props.fallback) {
+      page = this.getPageForRoute(this.props.fallback)
+    }
     this.setPageList(page);
     this.setState({ currentPage: page });
   }
 
   setPageList(page) {
-    // If the currentPage is meant to be appended (like if we want to do a modal or something)
-    // then append it to the list of pages currently visible. Otherwise we just replace the
-    let pageList = this.state.pageList;
-    // We set the base page to be the main page
-    pageList = [page];
-    const urlParameters = page.props.urlParameters;
-    // If additional parameters were passed in the url
-    if (urlParameters) {
-      // Get all the sub-paths of the rest of the array
-      const pathArray = urlParameters.split('/');
-      for (let i = 0; i < pathArray.length; i++) {
-        const path = `/${pathArray[i]}`;
-        const subPage = this.approxRoutes[path];
-        // If a subpage exists in the rest of the
-        // url parameters we add it to the page list
-        if (subPage && subPage.props.append) {
-          pageList.push(subPage);
+    if (page) {
+      // If the currentPage is meant to be appended (like if we want to do a modal or something)
+      // then append it to the list of pages currently visible. Otherwise we just replace the
+      let pageList = this.state.pageList;
+      // We set the base page to be the main page
+      pageList = [page];
+      const urlParameters = page.props.urlParameters;
+      // If additional parameters were passed in the url
+      if (urlParameters) {
+        // Get all the sub-paths of the rest of the array
+        const pathArray = urlParameters.split('/');
+        for (let i = 0; i < pathArray.length; i++) {
+          const path = `/${pathArray[i]}`;
+          const subPage = this.approxRoutes[path];
+          // If a subpage exists in the rest of the
+          // url parameters we add it to the page list
+          if (subPage && subPage.props.append) {
+            pageList.push(subPage);
+          }
         }
       }
-    }
 
-    this.setState({ pageList: pageList })
+      this.setState({ pageList: pageList })
+    } else {
+      console.warn('Setting page list of null. Aborting...');
+    }
   }
 
   /**
@@ -215,6 +228,8 @@ export default class PageTransition extends React.Component {
    * @return {void}
    */
   routeWillChange(route) {
+    // We are about to change routes
+    this.transitioning = true;
     // Notify parent if needed
     if (typeof this.props.routeWillChange === 'function') {
       this.props.routeWillChange(route);
@@ -243,6 +258,8 @@ export default class PageTransition extends React.Component {
    * @return {void}
    */
   routeDidChange() {
+    // We're done changing routes
+    this.transitioning = false;
     // Notify parent if needed
     if (typeof this.props.routeDidChange === 'function') {
       this.props.routeDidChange(route);
@@ -313,7 +330,7 @@ export default class PageTransition extends React.Component {
     const currentPage = this.getPageForRoute(this.state.currentRoute);
     // All animations merged into one object. If a route has a specific animation,
     // that animation will override the general animations.
-    const animations = Object.assign({}, this.props.animations, currentPage.props.animations);
+    const animations = Object.assign({}, this.props.animations, (currentPage ? currentPage.props.animations : {}));
 
     let newEnterAnimation = null;
     let newExitAnimation = null;
@@ -371,6 +388,7 @@ export default class PageTransition extends React.Component {
 
 PageTransition.propTypes = {
   routes: PropTypes.array.isRequired,
+  fallback: PropTypes.string,
   routeWillChange: PropTypes.func,
   routeDidChange: PropTypes.func,
   exitAnimationFinish: PropTypes.func,

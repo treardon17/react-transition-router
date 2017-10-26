@@ -70,6 +70,10 @@ var PageTransition = function (_React$Component) {
         currentPage: null,
         pageList: []
       };
+
+      // A flag determining whether or not
+      // we're currently changing routes
+      this.transitioning = false;
       // Current action --> POP or PUSH
       this.currentAction = '';
       // Start with empty route objects, to be constructed in `setRoutes`
@@ -134,34 +138,43 @@ var PageTransition = function (_React$Component) {
     key: 'setPageForRoute',
     value: function setPageForRoute(route) {
       var page = this.getPageForRoute(route);
+      // If we didn't find a page, we want to look to see
+      // if there's a fallback page we can go to
+      if (!page && this.props.fallback) {
+        page = this.getPageForRoute(this.props.fallback);
+      }
       this.setPageList(page);
       this.setState({ currentPage: page });
     }
   }, {
     key: 'setPageList',
     value: function setPageList(page) {
-      // If the currentPage is meant to be appended (like if we want to do a modal or something)
-      // then append it to the list of pages currently visible. Otherwise we just replace the
-      var pageList = this.state.pageList;
-      // We set the base page to be the main page
-      pageList = [page];
-      var urlParameters = page.props.urlParameters;
-      // If additional parameters were passed in the url
-      if (urlParameters) {
-        // Get all the sub-paths of the rest of the array
-        var pathArray = urlParameters.split('/');
-        for (var i = 0; i < pathArray.length; i++) {
-          var path = '/' + pathArray[i];
-          var subPage = this.approxRoutes[path];
-          // If a subpage exists in the rest of the
-          // url parameters we add it to the page list
-          if (subPage && subPage.props.append) {
-            pageList.push(subPage);
+      if (page) {
+        // If the currentPage is meant to be appended (like if we want to do a modal or something)
+        // then append it to the list of pages currently visible. Otherwise we just replace the
+        var pageList = this.state.pageList;
+        // We set the base page to be the main page
+        pageList = [page];
+        var urlParameters = page.props.urlParameters;
+        // If additional parameters were passed in the url
+        if (urlParameters) {
+          // Get all the sub-paths of the rest of the array
+          var pathArray = urlParameters.split('/');
+          for (var i = 0; i < pathArray.length; i++) {
+            var path = '/' + pathArray[i];
+            var subPage = this.approxRoutes[path];
+            // If a subpage exists in the rest of the
+            // url parameters we add it to the page list
+            if (subPage && subPage.props.append) {
+              pageList.push(subPage);
+            }
           }
         }
-      }
 
-      this.setState({ pageList: pageList });
+        this.setState({ pageList: pageList });
+      } else {
+        console.warn('Setting page list of null. Aborting...');
+      }
     }
 
     /**
@@ -281,6 +294,8 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'routeWillChange',
     value: function routeWillChange(route) {
+      // We are about to change routes
+      this.transitioning = true;
       // Notify parent if needed
       if (typeof this.props.routeWillChange === 'function') {
         this.props.routeWillChange(route);
@@ -312,6 +327,8 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'routeDidChange',
     value: function routeDidChange() {
+      // We're done changing routes
+      this.transitioning = false;
       // Notify parent if needed
       if (typeof this.props.routeDidChange === 'function') {
         this.props.routeDidChange(route);
@@ -397,7 +414,7 @@ var PageTransition = function (_React$Component) {
       var currentPage = this.getPageForRoute(this.state.currentRoute);
       // All animations merged into one object. If a route has a specific animation,
       // that animation will override the general animations.
-      var animations = Object.assign({}, this.props.animations, currentPage.props.animations);
+      var animations = Object.assign({}, this.props.animations, currentPage ? currentPage.props.animations : {});
 
       var newEnterAnimation = null;
       var newExitAnimation = null;
@@ -472,6 +489,7 @@ var PageTransition = function (_React$Component) {
 
 PageTransition.propTypes = {
   routes: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array.isRequired,
+  fallback: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string,
   routeWillChange: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   routeDidChange: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
   exitAnimationFinish: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
