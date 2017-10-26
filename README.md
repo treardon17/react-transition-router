@@ -11,7 +11,7 @@
 * `path`: PropTypes.string.isRequired
 * `component`: PropTypes.func.isRequired
 * `exact`: PropTypes.bool
-* `childOf`: PropTypes.string
+* `append`: PropTypes.bool
 * `absolute`: PropTypes.bool
 * `animations`: PropTypes.object
 
@@ -32,15 +32,8 @@ An example of what the above is describing would look something like this:
 
 Where the rest of the url would be accessible from `dataObject.urlParams`.
 
-#### childOf
-If you would like to deep link to a modal element or have a child page of another page, you can specify the `childOf` prop. To use this, you specify the path of the parent page. Then when you go to this route's path, it will first render the parent page, and then it will render this page. Currently there is only support for a single child page, but support for multiple child pages could be implemented in the future should the need arise.
-
-Example:
-```
-<Route exact path="/test" key="Test" component={() => <Test state={appState} />} />
-<Route exact childOf="/test" path="/test/modal" key="modal" component={() => <Modal state={appState} />} />
-```
-In this scenario, the `/test` page is the parent and the `/test/modal` page is the child.  If you go to `/test/` and then push `/test/modal`, the `/test` page will not go away, but rather the `/test/modal` page will be rendered alongside the `/test/` page.
+#### append
+If you would like to append pages/elements (i.e. a modal), you can do that by adding the `append` prop to a route you would like to append. This will only work if the parent page and the page to be appended is an 'approximate' route.
 
 #### absolute
 Helpful for when animations are not serialized. Prevents elements transitioning from affecting each other's place on the page.  Adds `position: 'absolute'` and `top:0`, `bottom:0`, `left:0`, `right:0` to the routes. Defaults to `false`.

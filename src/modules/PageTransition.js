@@ -92,14 +92,24 @@ export default class PageTransition extends React.Component {
     // If the currentPage is meant to be appended (like if we want to do a modal or something)
     // then append it to the list of pages currently visible. Otherwise we just replace the
     let pageList = this.state.pageList;
-    // current page list with the currentPage
-    if (page && page.props.childOf) {
-      const parentRoute = this.getFormattedRoute(page.props.childOf);
-      const parent = this.getPageForRoute(parentRoute);
-      pageList = [parent, page];
-    } else {
-      pageList = [page];
+    // We set the base page to be the main page
+    pageList = [page];
+    const urlParameters = page.props.urlParameters;
+    // If additional parameters were passed in the url
+    if (urlParameters) {
+      // Get all the sub-paths of the rest of the array
+      const pathArray = urlParameters.split('/');
+      for (let i = 0; i < pathArray.length; i++) {
+        const path = `/${pathArray[i]}`;
+        const subPage = this.approxRoutes[path];
+        // If a subpage exists in the rest of the
+        // url parameters we add it to the page list
+        if (subPage && subPage.props.append) {
+          pageList.push(subPage);
+        }
+      }
     }
+
     this.setState({ pageList: pageList })
   }
 
@@ -125,20 +135,39 @@ export default class PageTransition extends React.Component {
    */
   getPageForRoute(path) {
     const testPath = this.getFormattedRoute(path);
+    // EXACT ROUTES
     // First check to see if the page is in the exactRoutes object
     let page = this.exactRoutes[testPath];
+
+    // APPROXIMATE ROUTES
     // Otherwise we check to see if it's in the approxRoutes object
     if (!page){
+      // Get the keys for the approximate routes
       const keys = Object.keys(this.approxRoutes);
       let bestMatchPath = '';
       let parameterString = '';
+      // Iterate over the keys and look for a potential match
       for (let i = 0; i < keys.length; i++){
-        const newPath = keys[i];
-        const pathArray = testPath.split(newPath);
-        // If there was a match, we found a possible winner
-        if (pathArray && pathArray.length === 2 && bestMatchPath.length < newPath.length) {
-          bestMatchPath = newPath;
-          parameterString = pathArray[1];
+        let newPath = keys[i];
+        // If the path was just a slash, the rest of the
+        // string should be parameters
+        if (newPath.length === 0) {
+          parameterString = testPath
+        } else {
+          const pathArray = testPath.split(newPath);
+          // If there was a match, we found a possible winner
+          if (pathArray && pathArray.length === 2 && bestMatchPath.length < newPath.length) {
+            // Check to see if this page is actually
+            // a page we want to set as the main page,
+            // or if it should be appended.
+            // If the page should be appended, we
+            // skip it
+            const testPage = this.approxRoutes[newPath];
+            if (!testPage.props.append) {
+              bestMatchPath = newPath;
+              parameterString = pathArray[1];
+            }
+          }
         }
       }
       // We found our approximated page

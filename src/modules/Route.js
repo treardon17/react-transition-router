@@ -30,5 +30,5 @@ Route.propTypes = {
   exact: PropTypes.bool,
   animations: PropTypes.object,
   absolute: PropTypes.bool,
-  childOf: PropTypes.string,
+  append: PropTypes.bool
 };
