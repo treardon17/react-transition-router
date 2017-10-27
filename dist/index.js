@@ -541,14 +541,19 @@ var Route = function (_React$Component) {
   _createClass(Route, [{
     key: 'render',
     value: function render() {
-      var urlParameters = this.props.urlParameters || '';
-      var data = { urlParams: urlParameters };
       var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
       var animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
+      var urlParameters = this.props.urlParameters || '';
+      var data = { urlParams: urlParameters, state: this.props.state };
+      var component = null;
+      if (this.props.component) {
+        component = __WEBPACK_IMPORTED_MODULE_0_react___default.a.cloneElement(this.props.component, data);
+      }
+
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         { className: 'route', style: Object.assign(positionStyles, animationStyles) },
-        this.props.component(data)
+        component
       );
     }
   }]);
@@ -561,11 +566,12 @@ var Route = function (_React$Component) {
 
 Route.propTypes = {
   path: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string.isRequired,
-  component: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func.isRequired,
+  component: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object.isRequired,
   exact: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
   animations: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object,
   absolute: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  append: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
+  append: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  state: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object
 };
 
 /***/ }),

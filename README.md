@@ -9,7 +9,7 @@
 ## Route
 ### Props
 * `path`: PropTypes.string.isRequired
-* `component`: PropTypes.func.isRequired
+* `component`: PropTypes.object.isRequired
 * `exact`: PropTypes.bool
 * `append`: PropTypes.bool
 * `absolute`: PropTypes.bool
@@ -19,7 +19,7 @@
 A unique path that determines the URL to a `component`
 
 #### component: REQUIRED
-The element that will be available at the `path`. Should be an anonymous function that returns the component you want.
+The element that will be available at the `path`. Should be an instance of the component you want to render.
 
 #### exact
 If `exact` is set to `true`, the exact url given as a prop must be entered into the address bar in order to get to that page. If `exact` is set to `false`, then if the url in the address bar matches the url given as a prop and then some, then the page that is closest to the url in the address bar will be given.
@@ -140,8 +140,8 @@ export default class Routes extends React.Component {
 
     this.state = {
       routes: [
-        <Route exact path="/" key="Home" component={() => <Home state={appState} />} animations={animationObject} />,
-        <Route exact path="/test" key="Test" component={() => <Test state={appState} />} />,
+        <Route path="/" key="Home" component={<Home state={appState} />} animations={animationObject} />,
+        <Route exact path="/test" key="Test" component={ <Test state={appState} />} />,
       ],
     };
   }
