@@ -542,7 +542,7 @@ var Route = function (_React$Component) {
     key: 'render',
     value: function render() {
       var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
-      var animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
+      var animationStyles = { backfaceVisibility: 'hidden' };
       var urlParameters = this.props.urlParameters || '';
       var data = { urlParams: urlParameters, state: this.props.state };
       var component = null;
@@ -617,7 +617,7 @@ var History = function () {
     this.listeners = {};
     this.hashHistory = [window.location.pathname];
     this.historyLength = window.history.length;
-    this.currentRoute - window.location.pathname;
+    this.currentRoute = window.location.pathname;
     this.allowPushDuplicates = false;
     this.setBinds();
 
