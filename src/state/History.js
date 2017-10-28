@@ -7,7 +7,7 @@ class History {
     this.listeners = { };
     this.hashHistory = [window.location.pathname];
     this.historyLength = window.history.length;
-    this.currentRoute - window.location.pathname;
+    this.currentRoute = window.location.pathname;
     this.allowPushDuplicates = false;
     this.setBinds();
 

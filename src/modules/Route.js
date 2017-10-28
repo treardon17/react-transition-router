@@ -13,7 +13,7 @@ export default class Route extends React.Component {
 
   render() {
     const positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, } : { };
-    const animationStyles = { backfaceVisibility: 'hidden', WebkitPerspective: 1000 };
+    const animationStyles = { backfaceVisibility: 'hidden' };
     const urlParameters = this.props.urlParameters || '';
     const data = { urlParams: urlParameters, state: this.props.state };
     let component = null;
