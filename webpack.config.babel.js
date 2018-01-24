@@ -1,9 +1,9 @@
-import path from 'path';
-import webpack from 'webpack';
-import CleanWebpackPlugin from 'clean-webpack-plugin';
+const path = require('path');
+const webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const packageJson = require('./package.json');
 
-export default () => ({
+module.exports = () => ({
     entry: {
         index: path.join(__dirname, 'src/index.js'),
     },
@@ -46,8 +46,7 @@ export default () => ({
         new webpack.DefinePlugin({
           'process.env': {
             NODE_ENV: '"production"',
-          },
-          window: { history: [], location: { pathname: '""' } }
+          }
         }),
         // Clean dist folder
         new CleanWebpackPlugin(['dist/*.*']),
