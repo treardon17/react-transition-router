@@ -42,6 +42,13 @@ export default () => ({
     },
 
     plugins: [
+        // create global constants
+        new webpack.DefinePlugin({
+          'process.env': {
+            NODE_ENV: '"production"',
+          },
+          window: { history: [], location: { pathname: '""' } }
+        }),
         // Clean dist folder
         new CleanWebpackPlugin(['dist/*.*']),
 

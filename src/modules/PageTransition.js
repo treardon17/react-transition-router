@@ -23,7 +23,7 @@ export default class PageTransition extends React.Component {
 
   setDefaults() {
     this.state = {
-      currentRoute: window.location.pathname,
+      currentRoute: window.location.pathname || {},
       prevRoute: null,
       currentPage: null,
       pageList: [],
