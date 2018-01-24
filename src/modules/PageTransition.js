@@ -64,7 +64,7 @@ export default class PageTransition extends React.Component {
     const exactRoutes = {};
     const approxRoutes = {};
     for (let i = 0; i < routes.length; i+=1) {
-      const routeItem = routes[i];
+      const routeItem = React.cloneElement(routes[i], { getRef: (ref) => { console.log('ref is: ', ref); }});
       // If the route item path has a slash at the end of it
       // we want to get rid of that so it's easier to look up
       // that path later (consistent formatting wise)
@@ -370,6 +370,7 @@ export default class PageTransition extends React.Component {
   }
 
   render() {
+    console.log(this.props.routes);
     const { enterAnimation, exitAnimation } = this.createAnimations();
     const styles = { position: 'relative' };
     return (

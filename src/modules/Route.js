@@ -9,21 +9,33 @@ export default class Route extends React.Component {
     this.absolute = this.props.absolute;
     // This would make it default to true
     // (this.props.absolute == null || this.props.absolute ? true : false);
+    // This is a reference to the modified component, that will be set in the render method
+    this.component = null;
+  }
+
+  componentDidMount() {
+    this.getRef();
+  }
+
+  getRef() {
+    if (typeof this.props.getRef === 'function') {
+      this.props.getRef(this);
+    }
   }
 
   render() {
     const positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, } : { };
     const animationStyles = { backfaceVisibility: 'hidden' };
     const urlParameters = this.props.urlParameters || '';
-    const data = { urlParams: urlParameters, state: this.props.state };
+    const data = { urlParams: urlParameters, state: this.props.state, parentRoute: this };
     let component = null;
     if (this.props.component) {
-      component = React.cloneElement(this.props.component, data);
+      this.component = React.cloneElement(this.props.component, data);
     }
 
     return (
       <div className="route" style={Object.assign(positionStyles, animationStyles)}>
-        {component}
+        {this.component}
       </div>
     );
   }

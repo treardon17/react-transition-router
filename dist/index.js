@@ -111,7 +111,9 @@ var PageTransition = function (_React$Component) {
       var exactRoutes = {};
       var approxRoutes = {};
       for (var i = 0; i < routes.length; i += 1) {
-        var routeItem = routes[i];
+        var routeItem = __WEBPACK_IMPORTED_MODULE_0_react___default.a.cloneElement(routes[i], { getRef: function getRef(ref) {
+            console.log('ref is: ', ref);
+          } });
         // If the route item path has a slash at the end of it
         // we want to get rid of that so it's easier to look up
         // that path later (consistent formatting wise)
@@ -460,6 +462,8 @@ var PageTransition = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
+      console.log(this.props.routes);
+
       var _createAnimations = this.createAnimations(),
           enterAnimation = _createAnimations.enterAnimation,
           exitAnimation = _createAnimations.exitAnimation;
@@ -535,25 +539,39 @@ var Route = function (_React$Component) {
     _this.absolute = _this.props.absolute;
     // This would make it default to true
     // (this.props.absolute == null || this.props.absolute ? true : false);
+    // This is a reference to the modified component, that will be set in the render method
+    _this.component = null;
     return _this;
   }
 
   _createClass(Route, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.getRef();
+    }
+  }, {
+    key: 'getRef',
+    value: function getRef() {
+      if (typeof this.props.getRef === 'function') {
+        this.props.getRef(this);
+      }
+    }
+  }, {
     key: 'render',
     value: function render() {
       var positionStyles = this.absolute ? { position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 } : {};
       var animationStyles = { backfaceVisibility: 'hidden' };
       var urlParameters = this.props.urlParameters || '';
-      var data = { urlParams: urlParameters, state: this.props.state };
+      var data = { urlParams: urlParameters, state: this.props.state, parentRoute: this };
       var component = null;
       if (this.props.component) {
-        component = __WEBPACK_IMPORTED_MODULE_0_react___default.a.cloneElement(this.props.component, data);
+        this.component = __WEBPACK_IMPORTED_MODULE_0_react___default.a.cloneElement(this.props.component, data);
       }
 
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         { className: 'route', style: Object.assign(positionStyles, animationStyles) },
-        component
+        this.component
       );
     }
   }]);
