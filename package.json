@@ -1,6 +1,6 @@
 {
   "name": "react-transition-router",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.babel.js",
@@ -25,7 +25,8 @@
     "history": "^4.7.2",
     "prop-types": "^15.5.10",
     "react": "^15.5.4",
-    "velocity-react": "^1.3.3"
+    "velocity-react": "^1.3.3",
+    "window": "^4.2.4"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.2",
